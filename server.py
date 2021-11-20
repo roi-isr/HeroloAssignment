@@ -5,7 +5,6 @@ import db
 import models
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -32,14 +31,30 @@ def write_message():
 
 @app.route('/get-all-message/<username>', methods=['GET'])
 def get_all_messages_by_username(username):
+    unread_only = request.args.get('unread') == "true"
+
     db_session = db.open_db_session(models.DBSession)
 
     try:
-        user_messages = models.User.get_all_messages(db_session=db_session, username=str(username).title())
-    except ValueError:
-        return jsonify({"Message": "The user specified doesn't exist"}), 404
+        user_messages = models.User.get_all_messages(db_session=db_session,
+                                                     username=str(username).title(),
+                                                     unread_only=unread_only)
+    except ValueError as err:
+        return jsonify({"Message": str(err)}), 404
 
     return jsonify(user_messages), 200
+
+
+@app.route('/read-message/<username>', methods=['GET'])
+def read_message(username):
+    db_session = db.open_db_session(models.DBSession)
+    try:
+        unread_user_message = models.User.read_message(db_session=db_session,
+                                                       username=str(username).title())
+    except ValueError as err:
+        return jsonify({"Message": str(err)}), 404
+
+    return jsonify(unread_user_message), 200
 
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
+import json
+
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, func, ForeignKey
 from sqlalchemy.orm import relationship
+
 from . import Base
-import json
 
 
 class Message(Base):

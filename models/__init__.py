@@ -10,4 +10,3 @@ db_engine = create_db_engine()
 DBSession = create_db_session(db_engine)
 
 Base.metadata.create_all(db_engine)
-
