@@ -1,3 +1,5 @@
+"""PostgreSQL engine for creating sqlalchemy engine and creating/opening DB sessions"""
+
 import os
 
 from dotenv import load_dotenv

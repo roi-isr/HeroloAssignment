@@ -1,9 +1,9 @@
 """Spinning up a Flask server that listens to incoming requests on localhost in port 5000"""
+
 import os
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
 from flask_jwt_extended import (
     JWTManager,
     jwt_required,
@@ -30,8 +30,8 @@ def write_message():
 
     db_session = db.open_db_session(models.DBSession)
 
-    sender = models.User.get_user(db_session=db_session, username=str(body["sender"]).title())
-    receiver = models.User.get_user(db_session=db_session, username=str(body["receiver"]).title())
+    sender = models.User.get_user_by_name(db_session=db_session, username=str(body["sender"]).title())
+    receiver = models.User.get_user_by_name(db_session=db_session, username=str(body["receiver"]).title())
     message = models.Message(
         sender=sender,
         receiver=receiver,
@@ -45,16 +45,19 @@ def write_message():
     return jsonify({"Message": f"Your message to {body['sender']} was sent successfully!"}), 201
 
 
-@app.route('/get-all-messages/<username>', methods=['GET'])
+@app.route('/get-all-messages', methods=['GET'])
 @jwt_required()
-def get_all_messages_by_username(username):
+def get_all_messages_by_username():
     unread_only = request.args.get('unread') == "true"
 
     db_session = db.open_db_session(models.DBSession)
 
+    logged_in_user_id = get_jwt_identity()
+    logged_in_user = models.User.find_user_by_id(db_session=db_session, _id=logged_in_user_id)
+
     try:
         user_messages = models.User.get_all_messages(db_session=db_session,
-                                                     username=str(username).title(),
+                                                     username=str(logged_in_user.username).title(),
                                                      unread_only=unread_only)
     except ValueError as err:
         db_session.close()
@@ -64,13 +67,17 @@ def get_all_messages_by_username(username):
     return jsonify(user_messages), 200
 
 
-@app.route('/read-message/<username>', methods=['GET'])
+@app.route('/read-message', methods=['GET'])
 @jwt_required()
-def read_message(username):
+def read_message():
     db_session = db.open_db_session(models.DBSession)
+
+    logged_in_user_id = get_jwt_identity()
+    logged_in_user = models.User.find_user_by_id(db_session=db_session, _id=logged_in_user_id)
+
     try:
         unread_user_message = models.User.read_message(db_session=db_session,
-                                                       username=str(username).title())
+                                                       username=str(logged_in_user.username).title())
     except ValueError as err:
         db_session.close()
         return jsonify({"Message": str(err)}), 404

@@ -8,6 +8,7 @@ from . import Base
 
 class Message(Base):
     """Describes a simple message model"""
+
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
