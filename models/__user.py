@@ -1,6 +1,7 @@
 import json
 
 from sqlalchemy import Column, Integer, String, or_
+from utils import hash, safe_pwd_cmp
 
 from models.__message import Message
 from . import Base
@@ -12,6 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
+    password = Column(String, default=hash.hash_password("password"))
 
     @classmethod
     def get_user(cls, db_session, username: str, create_if_not_exist=True):
@@ -57,6 +59,18 @@ class User(Base):
         db_session.commit()
 
     @classmethod
+    def verify_user(cls, db_session, username: str, password: str):
+        try:
+            user = cls.__find_user(db_session, username)
+        except ValueError:
+            return False
+
+        hashed_password = hash.hash_password(password)
+        if user and safe_pwd_cmp.safe_pwd_cmp(hashed_password, user.password):
+            return user
+        return None
+
+    @classmethod
     def __find_user(cls, db_session, username: str):
         user = cls.get_user(db_session=db_session, username=username, create_if_not_exist=False)
         if not user:
@@ -64,4 +78,4 @@ class User(Base):
         return user
 
     def __repr__(self):
-        return self.username
+        return str(self.username)
