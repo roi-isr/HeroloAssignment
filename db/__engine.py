@@ -8,7 +8,7 @@ load_dotenv()
 
 
 def create_db_engine():
-    db_engine = create_engine(os.environ.get("DB_CONNECTION"))
+    db_engine = create_engine(os.environ.get("DATABASE_URL_1"))
     return db_engine
 
 
