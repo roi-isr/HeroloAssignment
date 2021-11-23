@@ -1,12 +1,13 @@
 import json
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, or_
 
 from models.__message import Message
 from . import Base
 
 
 class User(Base):
+    """Describes a messaging user model"""
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
@@ -43,6 +44,17 @@ class User(Base):
         db_session.merge(unread_message)
         db_session.commit()
         return json.loads(str(unread_message))
+
+    @classmethod
+    def delete_message(cls, db_session, username: str):
+        user = cls.__find_user(db_session, username)
+        msg = db_session.query(Message).filter(
+            or_(Message.sender_id == user.id, Message.receiver_id == user.id)).first()
+        print(msg)
+        if not msg:
+            raise ValueError(f"No messages found for {username} as a sender or a receiver")
+        db_session.delete(msg)
+        db_session.commit()
 
     @classmethod
     def __find_user(cls, db_session, username: str):

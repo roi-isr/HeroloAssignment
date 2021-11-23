@@ -1,9 +1,10 @@
 """Spinning up a Flask server that listens to incoming requests on localhost in port 5000"""
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
+
 import db
 import models
-from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -55,6 +56,18 @@ def read_message(username):
         return jsonify({"Message": str(err)}), 404
 
     return jsonify(unread_user_message), 200
+
+
+@app.route('/delete-message/<username>', methods=['DELETE'])
+def delete_message(username):
+    db_session = db.open_db_session(models.DBSession)
+    try:
+        models.User.delete_message(db_session=db_session,
+                                   username=str(username).title())
+    except ValueError as err:
+        return jsonify({"Message": str(err)}), 404
+
+    return jsonify({"Message": f"Your message was deleted successfully!"}), 200
 
 
 if __name__ == "__main__":
