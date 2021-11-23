@@ -42,7 +42,7 @@ def write_message():
     db.write(db_session=db_session, model_instance=message)
 
     db_session.close()
-    return jsonify({"Message": f"Your message to {body['sender']} was sent successfully!"}), 201
+    return jsonify({"Message": f"Your message to {body['receiver']} was sent successfully!"}), 201
 
 
 @app.route('/get-all-messages', methods=['GET'])
