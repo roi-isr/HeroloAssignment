@@ -45,7 +45,7 @@ def write_message():
     return jsonify({"Message": f"Your message to {body['sender']} was sent successfully!"}), 201
 
 
-@app.route('/get-all-message/<username>', methods=['GET'])
+@app.route('/get-all-messages/<username>', methods=['GET'])
 @jwt_required()
 def get_all_messages_by_username(username):
     unread_only = request.args.get('unread') == "true"

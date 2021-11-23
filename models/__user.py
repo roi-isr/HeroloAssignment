@@ -1,9 +1,9 @@
 import json
 
 from sqlalchemy import Column, Integer, String, or_
-from utils import hash, safe_pwd_cmp
 
 from models.__message import Message
+from utils import hash, safe_pwd_cmp
 from . import Base
 
 
@@ -18,6 +18,7 @@ class User(Base):
     @classmethod
     def get_user(cls, db_session, username: str, create_if_not_exist=True):
         user = db_session.query(cls).filter_by(username=username).first()
+
         if user:
             return user
         elif create_if_not_exist:
@@ -52,9 +53,10 @@ class User(Base):
         user = cls.__find_user(db_session, username)
         msg = db_session.query(Message).filter(
             or_(Message.sender_id == user.id, Message.receiver_id == user.id)).first()
-        print(msg)
+
         if not msg:
             raise ValueError(f"No messages found for {username} as a sender or a receiver")
+
         db_session.delete(msg)
         db_session.commit()
 
@@ -66,6 +68,7 @@ class User(Base):
             return False
 
         hashed_password = hash.hash_password(password)
+
         if user and safe_pwd_cmp.safe_pwd_cmp(hashed_password, user.password):
             return user
         return None
@@ -73,6 +76,7 @@ class User(Base):
     @classmethod
     def __find_user(cls, db_session, username: str):
         user = cls.get_user(db_session=db_session, username=username, create_if_not_exist=False)
+
         if not user:
             raise ValueError(f"The user specified ({username}) doesn't exist")
         return user
